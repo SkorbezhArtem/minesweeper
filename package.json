@@ -1,0 +1,20 @@
+{
+  "name": "rss-minesweeper",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "eslint minesweeper/src/js/**/*.js",
+    "start": "vite minesweeper --host 0.0.0.0",
+    "build": "vite build minesweeper --base=/minesweeper/",
+    "deploy": "gh-pages -d minesweeper/dist"
+  },
+  "devDependencies": {
+    "@eslint/js": "^8.57.1",
+    "eslint": "^8.57.1",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.31.0",
+    "gh-pages": "^6.3.0",
+    "vite": "^6.3.5"
+  }
+}
