@@ -93,8 +93,8 @@ body {
 }
 
 body {
-  min-width: 360px;
   min-height: 100vh;
+  overflow-x: hidden;
   background:
     radial-gradient(1200px 600px at 92% -10%, rgb(163 255 18 / 14%), transparent 60%),
     radial-gradient(900px 600px at -10% 110%, rgb(92 243 255 / 12%), transparent 60%),
@@ -230,10 +230,8 @@ button {
 /* ---------------- hero ---------------- */
 .hero {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.9fr);
-  gap: 24px;
-  align-items: stretch;
-  padding: 28px;
+  gap: 18px;
+  padding: 22px 24px;
   border: 1px solid var(--line);
   border-radius: 28px;
   background: var(--panel);
@@ -241,6 +239,33 @@ button {
   box-shadow: var(--shadow-soft);
   position: relative;
   overflow: hidden;
+}
+
+.hero__head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.hero__label {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--bg-elev);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.hero__label svg {
+  color: var(--accent);
 }
 
 .hero::before {
@@ -311,6 +336,16 @@ button {
   grid-template-columns: 1.1fr 1fr 1fr;
   gap: 12px;
   align-content: center;
+}
+
+@media (max-width: 560px) {
+  .hero__hud {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .hud-card--time {
+    grid-column: 1 / -1;
+  }
 }
 
 .hud-card {
@@ -401,7 +436,7 @@ button {
 /* ---------------- toolbar ---------------- */
 .toolbar {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr) minmax(0, 1fr);
   gap: 14px;
 }
 
@@ -637,16 +672,17 @@ button {
 /* ---------------- board ---------------- */
 .board-wrap {
   position: relative;
-  padding: 22px;
+  padding: clamp(12px, 3vw, 22px);
   border: 1px solid var(--line);
   border-radius: 30px;
   background: var(--panel);
   backdrop-filter: blur(22px);
   box-shadow: var(--shadow-soft);
   display: grid;
-  gap: 18px;
+  gap: clamp(10px, 2vw, 18px);
   overflow: hidden;
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  min-width: 0;
 }
 
 .board-aura {
@@ -663,11 +699,13 @@ button {
   position: relative;
   display: grid;
   place-items: center;
-  padding: 18px;
+  padding: clamp(8px, 2vw, 18px);
   border: 1px dashed var(--line-strong);
   border-radius: 22px;
   background: rgb(0 0 0 / 18%);
-  overflow: auto;
+  container-type: inline-size;
+  min-width: 0;
+  overflow: hidden;
 }
 
 [data-theme="light"] .board-frame {
@@ -676,26 +714,35 @@ button {
 
 .board {
   --columns: 10;
-  --cell-size: 32px;
+  --max-cell: 34px;
+  --gap: 4px;
 
   display: grid;
-  grid-template-columns: repeat(var(--columns), var(--cell-size));
-  gap: 4px;
+  grid-template-columns: repeat(var(--columns), minmax(0, var(--max-cell)));
+  gap: var(--gap);
+  justify-content: center;
+  width: 100%;
   font-family: var(--font-display);
   font-weight: 700;
 }
 
+.board[data-size="easy"] {
+  --max-cell: 36px;
+}
+
 .board[data-size="medium"] {
-  --cell-size: 28px;
+  --max-cell: 30px;
 }
 
 .board[data-size="hard"] {
-  --cell-size: 22px;
+  --max-cell: 24px;
+  --gap: 3px;
 }
 
 .cell {
-  width: var(--cell-size);
-  height: var(--cell-size);
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
   display: grid;
   place-items: center;
   padding: 0;
@@ -703,7 +750,7 @@ button {
   border-radius: 8px;
   background: var(--cell-face);
   color: var(--text);
-  font-size: calc(var(--cell-size) * 0.5);
+  font-size: clamp(0.55rem, calc(50cqi / var(--columns)), 1.05rem);
   letter-spacing: -0.04em;
   cursor: pointer;
   box-shadow: var(--cell-shadow);
@@ -1273,14 +1320,6 @@ button {
 
 /* ---------------- responsive ---------------- */
 @media (max-width: 960px) {
-  .hero {
-    grid-template-columns: 1fr;
-  }
-
-  .hero__hud {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
   .toolbar {
     grid-template-columns: 1fr;
   }
@@ -1289,12 +1328,12 @@ button {
 @media (max-width: 720px) {
   .app {
     width: min(100%, 100vw);
-    padding: 16px 14px 40px;
-    gap: 16px;
+    padding: 14px 12px 32px;
+    gap: 14px;
   }
 
   .hero {
-    padding: 22px;
+    padding: 18px 18px 20px;
   }
 
   .hud-card {
@@ -1322,14 +1361,6 @@ button {
     flex-wrap: wrap;
   }
 
-  .board[data-size="medium"] {
-    --cell-size: 24px;
-  }
-
-  .board[data-size="hard"] {
-    --cell-size: 18px;
-  }
-
   .scoreboard__head,
   .scoreboard__row {
     grid-template-columns: 32px 1fr 70px 50px;
@@ -1339,16 +1370,8 @@ button {
 }
 
 @media (max-width: 520px) {
-  .board[data-size="easy"] {
-    --cell-size: 26px;
-  }
-
-  .board[data-size="medium"] {
-    --cell-size: 20px;
-  }
-
-  .board[data-size="hard"] {
-    --cell-size: 14px;
+  .app {
+    padding: 12px 8px 24px;
   }
 
   .modal__panel {
@@ -1361,19 +1384,15 @@ button {
 }
 
 @media (max-width: 400px) {
-  .board[data-size="easy"] {
-    --cell-size: 22px;
-  }
-
-  .board[data-size="medium"] {
-    --cell-size: 16px;
-  }
-
-  .board[data-size="hard"] {
-    --cell-size: 12px;
+  .app {
+    padding: 10px 6px 20px;
   }
 
   .cell {
     border-radius: 6px;
+  }
+
+  .board[data-size="hard"] {
+    --gap: 2px;
   }
 }
