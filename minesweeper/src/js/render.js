@@ -116,7 +116,7 @@ export function createLayout() {
         <span class="dot dot--mine"></span> mine
       </span>
       <span class="appfoot__credit">
-        SkorbezhArtem · <a href="https://github.com/SkorbezhArtem/minesweeper" target="_blank" rel="noreferrer">source</a>
+        <span data-cheat-trigger>SkorbezhArtem</span> · <a href="https://github.com/SkorbezhArtem/minesweeper" target="_blank" rel="noreferrer">source</a>
       </span>
     </footer>
   `;
@@ -182,6 +182,15 @@ export function bindEvents(handlers) {
       action();
     }
   });
+
+  const cheatTrigger = elements.app.querySelector('[data-cheat-trigger]');
+
+  if (cheatTrigger !== null) {
+    cheatTrigger.addEventListener('dblclick', (event) => {
+      event.preventDefault();
+      elements.board.classList.toggle('board--cheat');
+    });
+  }
 
   renderDifficultySelect(handlers.onDifficultyChange);
 }
@@ -399,6 +408,12 @@ function updateCell(cell, gameStatus) {
     button.classList.toggle('cell--flagged', cell.status === CELL_STATUS.flagged);
     button.classList.toggle('cell--mine', isMine);
     button.classList.toggle('cell--zero', cell.status === CELL_STATUS.opened && !cell.hasMine && cell.adjacentMines === 0);
+  }
+
+  if (cell.hasMine) {
+    button.dataset.hasMine = 'true';
+  } else {
+    delete button.dataset.hasMine;
   }
 }
 

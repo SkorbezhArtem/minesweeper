@@ -989,6 +989,33 @@ button {
   align-items: center;
 }
 
+[data-cheat-trigger] {
+  cursor: default;
+  user-select: none;
+}
+
+.board--cheat .cell--hidden[data-has-mine="true"]::after,
+.board--cheat .cell--flagged[data-has-mine="true"]::after {
+  content: "";
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: rgb(255 95 177 / 70%);
+  box-shadow: 0 0 4px rgb(255 95 177 / 60%);
+  pointer-events: none;
+}
+
+.board--cheat .cell {
+  position: relative;
+}
+
+.board--cheat .cell--hidden[data-has-mine="true"]::after,
+.board--cheat .cell--flagged[data-has-mine="true"]::after {
+  bottom: 3px;
+  right: 3px;
+}
+
 .dot {
   display: inline-block;
   width: 8px;
