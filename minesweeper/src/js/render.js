@@ -33,21 +33,13 @@ export function createLayout() {
       </div>
       <div class="brand__text">
         <span class="brand__eyebrow">RSS / Vanilla JS</span>
-        <span class="brand__title">Minefield<span class="brand__title-accent">/ops</span></span>
-      </div>
-      <div class="brand__chip" aria-hidden="true">
-        ${icon('spark', { size: 14 })}
-        <span>v1.0</span>
+        <span class="brand__title">Minesweeper</span>
       </div>
     </header>
 
     <section class="hero">
-      <div class="hero__copy">
-        <p class="hero__eyebrow">${icon('clock', { size: 12 })} <span>Tactical sweep</span></p>
-        <h1 class="hero__title">Read the field. <em>Defuse it clean.</em></h1>
-        <p class="hero__lead">
-          Reveal every safe tile, flag the danger and clear the grid before the timer runs you down.
-        </p>
+      <div class="hero__head">
+        <span class="hero__label">${icon('spark', { size: 12 })} <span>Mission status</span></span>
       </div>
       <div class="hero__hud">
         <div class="hud-card hud-card--time">
@@ -124,7 +116,7 @@ export function createLayout() {
         <span class="dot dot--mine"></span> mine
       </span>
       <span class="appfoot__credit">
-        Built with vanilla JS · <a href="https://github.com/SkorbezhArtem/minesweeper" target="_blank" rel="noreferrer">source</a>
+        SkorbezhArtem · <a href="https://github.com/SkorbezhArtem/minesweeper" target="_blank" rel="noreferrer">source</a>
       </span>
     </footer>
   `;
@@ -439,6 +431,12 @@ function renderDifficultySelect(onChange) {
   const trigger = host.querySelector('[data-select-trigger]');
   trigger.addEventListener('click', (event) => {
     event.stopPropagation();
+
+    if (popoverState.popover && popoverState.trigger === trigger) {
+      closeSelectPopover();
+      return;
+    }
+
     openSelectPopover({
       trigger,
       options: DIFFICULTY_ORDER.map((value) => ({
