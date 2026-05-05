@@ -44,6 +44,7 @@ export const DEFAULT_DIFFICULTY = 'easy';
 
 export const STORAGE_KEYS = {
   save: 'rss-minesweeper-save',
+  autosave: 'rss-minesweeper-autosave',
   scores: 'rss-minesweeper-scores',
   theme: 'rss-minesweeper-theme',
   sound: 'rss-minesweeper-sound',

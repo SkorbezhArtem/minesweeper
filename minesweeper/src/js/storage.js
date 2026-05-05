@@ -4,12 +4,23 @@ export function saveGame(state) {
   localStorage.setItem(STORAGE_KEYS.save, JSON.stringify(state));
 }
 
+export function autosaveGame(state) {
+  localStorage.setItem(STORAGE_KEYS.autosave, JSON.stringify(state));
+}
+
 export function loadGame() {
-  return readJson(STORAGE_KEYS.save, null);
+  const manual = readJson(STORAGE_KEYS.save, null);
+
+  if (manual !== null) {
+    return manual;
+  }
+
+  return readJson(STORAGE_KEYS.autosave, null);
 }
 
 export function clearSavedGame() {
   localStorage.removeItem(STORAGE_KEYS.save);
+  localStorage.removeItem(STORAGE_KEYS.autosave);
 }
 
 export function getScores() {
