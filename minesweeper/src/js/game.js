@@ -28,6 +28,7 @@ import {
 import { createInitialState } from './state.js';
 import { playSound, toggleSound } from './sound.js';
 import {
+  autosaveGame,
   clearSavedGame,
   clearScores,
   getSavedTheme,
@@ -42,6 +43,7 @@ import { icon } from './icons.js';
 
 let state = createInitialState();
 let theme = getSavedTheme();
+let lastLoadedSaveStamp = null;
 
 export function initGame() {
   createLayout();
@@ -90,7 +92,7 @@ function handleCellOpen(row, column) {
   }
 
   playSound('reveal');
-  saveGame(state);
+  autosaveGame(state);
   renderGame(state, { fresh: false });
 }
 
@@ -114,13 +116,14 @@ function handleCellFlag(row, column) {
   const flagDelta = toggleFlag(cell);
   state.flagsLeft += flagDelta;
   playSound(wasFlagged ? 'unflag' : 'flag');
-  saveGame(state);
+  autosaveGame(state);
   renderGame(state, { fresh: false });
 }
 
 function handleNewGame() {
   stopTimer();
   clearSavedGame();
+  lastLoadedSaveStamp = null;
   state = createInitialState(state.difficulty);
   renderGame(state);
 }
@@ -133,8 +136,19 @@ function handleContinueGame() {
     return;
   }
 
+  if (
+    typeof savedState.savedAt === 'number'
+    && savedState.savedAt === lastLoadedSaveStamp
+    && state.status === savedState.status
+    && state.moves === savedState.moves
+  ) {
+    flashMessage('Already at the saved checkpoint.', 'info');
+    return;
+  }
+
   stopTimer();
   state = savedState;
+  lastLoadedSaveStamp = typeof savedState.savedAt === 'number' ? savedState.savedAt : null;
 
   if (state.status === GAME_STATUS.playing) {
     startTimer(handleTimerTick);
@@ -150,6 +164,8 @@ function handleSaveGame() {
     return;
   }
 
+  state.savedAt = Date.now();
+  lastLoadedSaveStamp = state.savedAt;
   saveGame(state);
   flashMessage('Game saved.', 'info');
 }
@@ -157,6 +173,7 @@ function handleSaveGame() {
 function handleRandomGame() {
   stopTimer();
   clearSavedGame();
+  lastLoadedSaveStamp = null;
   let next = DIFFICULTY_ORDER[Math.floor(Math.random() * DIFFICULTY_ORDER.length)];
 
   if (next === state.difficulty && DIFFICULTY_ORDER.length > 1) {
@@ -174,6 +191,7 @@ function handleDifficultyChange(difficulty) {
 
   stopTimer();
   clearSavedGame();
+  lastLoadedSaveStamp = null;
   state = createInitialState(difficulty || DEFAULT_DIFFICULTY);
   renderGame(state);
 }
@@ -206,7 +224,7 @@ function startGameIfNeeded(row, column) {
 
 function handleTimerTick() {
   state.elapsedSeconds += 1;
-  saveGame(state);
+  autosaveGame(state);
   renderStats(state);
 }
 
