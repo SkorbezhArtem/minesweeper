@@ -102,7 +102,6 @@ body {
   background:
     radial-gradient(1200px 600px at 92% -10%, rgb(163 255 18 / 14%), transparent 60%),
     radial-gradient(900px 600px at -10% 110%, rgb(92 243 255 / 12%), transparent 60%),
-    radial-gradient(700px 500px at 50% 50%, rgb(255 95 177 / 6%), transparent 60%),
     var(--bg);
   color: var(--text);
   font-family: var(--font-body);
@@ -114,7 +113,6 @@ body {
   background:
     radial-gradient(1100px 600px at 90% -10%, rgb(77 122 0 / 14%), transparent 55%),
     radial-gradient(900px 500px at 5% 105%, rgb(10 166 194 / 14%), transparent 60%),
-    radial-gradient(700px 500px at 50% 60%, rgb(255 255 255 / 60%), transparent 60%),
     var(--bg);
 }
 
@@ -127,13 +125,19 @@ body::before {
   background-image:
     radial-gradient(rgb(255 255 255 / 5%) 1px, transparent 1px);
   background-size: 28px 28px;
-  mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
-  opacity: 0.6;
+  opacity: 0.35;
 }
 
 [data-theme="light"] body::before {
   background-image: radial-gradient(rgb(12 18 48 / 8%) 1px, transparent 1px);
-  opacity: 0.5;
+  opacity: 0.35;
+}
+
+.is-resizing *,
+.is-resizing *::before,
+.is-resizing *::after {
+  transition: none !important;
+  animation: none !important;
 }
 
 a {
@@ -174,8 +178,9 @@ button {
   border: 1px solid var(--line);
   border-radius: 22px;
   background: var(--panel);
-  backdrop-filter: blur(18px);
+  backdrop-filter: blur(10px);
   box-shadow: var(--shadow-soft);
+  contain: layout paint style;
 }
 
 .brand__mark {
@@ -239,10 +244,11 @@ button {
   border: 1px solid var(--line);
   border-radius: 28px;
   background: var(--panel);
-  backdrop-filter: blur(22px);
+  backdrop-filter: blur(12px);
   box-shadow: var(--shadow-soft);
   position: relative;
   overflow: hidden;
+  contain: layout paint style;
 }
 
 .hero__head {
@@ -361,6 +367,7 @@ button {
   border-radius: 20px;
   background: var(--bg-elev);
   overflow: hidden;
+  contain: layout paint style;
 }
 
 .hud-card__label {
@@ -451,8 +458,9 @@ button {
   border: 1px solid var(--line);
   border-radius: 22px;
   background: var(--panel);
-  backdrop-filter: blur(18px);
+  backdrop-filter: blur(10px);
   box-shadow: var(--shadow-soft);
+  contain: layout paint style;
 }
 
 .toolbar__label {
@@ -605,7 +613,7 @@ button {
   border: 1px solid var(--line-strong);
   border-radius: 16px;
   background: var(--panel-strong);
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(10px);
   box-shadow: var(--shadow-strong);
   opacity: 0;
   transform: translateY(-6px);
@@ -680,13 +688,14 @@ button {
   border: 1px solid var(--line);
   border-radius: 30px;
   background: var(--panel);
-  backdrop-filter: blur(22px);
+  backdrop-filter: blur(12px);
   box-shadow: var(--shadow-soft);
   display: grid;
   gap: clamp(10px, 2vw, 18px);
   overflow: hidden;
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   min-width: 0;
+  contain: layout paint style;
 }
 
 .board-aura {
@@ -758,7 +767,8 @@ button {
   letter-spacing: -0.04em;
   cursor: pointer;
   box-shadow: var(--cell-shadow);
-  transition: transform 0.12s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+  transition: transform 0.12s ease, box-shadow 0.18s ease;
+  contain: layout paint style;
 }
 
 .cell:hover:not(:disabled):not(.cell--opened):not(.cell--mine) {
@@ -1045,7 +1055,7 @@ button {
   place-items: center;
   padding: 24px;
   background: rgb(2 4 18 / 60%);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(6px);
   opacity: 0;
   transition: opacity 0.18s ease;
 }
@@ -1067,10 +1077,11 @@ button {
   border: 1px solid var(--line-strong);
   border-radius: 28px;
   background: var(--panel-strong);
-  backdrop-filter: blur(28px);
+  backdrop-filter: blur(14px);
   box-shadow: var(--shadow-strong);
   transform: translateY(14px) scale(0.98);
   transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+  contain: layout paint style;
 }
 
 .modal--open .modal__panel {
