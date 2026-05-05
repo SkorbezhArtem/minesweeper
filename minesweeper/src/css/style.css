@@ -1371,17 +1371,27 @@ button {
     padding: 12px 14px;
   }
 
-  .pill span {
+  .toolbar .pill span {
     display: none;
   }
 
-  .pill {
+  .toolbar .pill:not(.pill--icon) {
     width: 40px;
     padding: 0;
   }
 
-  .pill--icon {
-    width: 40px;
+  .modal__footer .pill,
+  .scoreboard__actions .pill,
+  .result__actions .pill {
+    flex: 0 1 auto;
+    min-width: 0;
+    padding: 0 14px;
+  }
+
+  .modal__footer .pill span,
+  .scoreboard__actions .pill span,
+  .result__actions .pill span {
+    display: inline;
   }
 
   .toolbar__group {
