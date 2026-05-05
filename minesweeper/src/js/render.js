@@ -12,6 +12,9 @@ import { icon } from './icons.js';
 const elements = {};
 const cellNodes = new Map();
 
+const CELL_FONT_MIN_PX = 8.8;
+const CELL_FONT_MAX_PX = 16.8;
+
 let popoverState = {
   trigger: null,
   onSelect: null,
@@ -20,6 +23,9 @@ let popoverState = {
 let modalState = {
   closeHandler: null,
 };
+
+let cellFontFrame = 0;
+let cellFontObserver = null;
 
 export function createLayout() {
   document.body.innerHTML = '';
@@ -135,6 +141,8 @@ export function createLayout() {
   elements.themeButton = app.querySelector('[data-theme-button]');
   elements.soundButton = app.querySelector('[data-sound-button]');
   elements.difficultyHost = app.querySelector('[data-difficulty]');
+
+  observeCellFont();
 }
 
 export function bindEvents(handlers) {
@@ -361,6 +369,53 @@ function rebuildBoard(state) {
     elements.board.append(button);
     cellNodes.set(cellKey(cell.row, cell.column), button);
   });
+
+  updateCellFont();
+}
+
+function updateCellFont() {
+  if (elements.board === undefined) {
+    return;
+  }
+
+  const width = elements.board.clientWidth;
+  const rawColumns = elements.board.style.getPropertyValue('--columns').trim();
+  const columns = Number.parseInt(rawColumns, 10);
+
+  if (!Number.isFinite(columns) || columns <= 0 || width <= 0) {
+    return;
+  }
+
+  const px = Math.max(
+    CELL_FONT_MIN_PX,
+    Math.min(CELL_FONT_MAX_PX, (width / columns) * 0.5),
+  );
+
+  elements.board.style.setProperty('--cell-font', `${px}px`);
+}
+
+function observeCellFont() {
+  if (typeof ResizeObserver === 'undefined' || elements.board === undefined) {
+    updateCellFont();
+    return;
+  }
+
+  if (cellFontObserver !== null) {
+    cellFontObserver.disconnect();
+  }
+
+  cellFontObserver = new ResizeObserver(() => {
+    if (cellFontFrame !== 0) {
+      return;
+    }
+
+    cellFontFrame = requestAnimationFrame(() => {
+      cellFontFrame = 0;
+      updateCellFont();
+    });
+  });
+
+  cellFontObserver.observe(elements.board);
 }
 
 function updateCell(cell, gameStatus) {

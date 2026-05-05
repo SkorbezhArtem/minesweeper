@@ -687,8 +687,7 @@ button {
   padding: clamp(12px, 3vw, 22px);
   border: 1px solid var(--line);
   border-radius: 30px;
-  background: var(--panel);
-  backdrop-filter: blur(12px);
+  background: var(--panel-strong);
   box-shadow: var(--shadow-soft);
   display: grid;
   gap: clamp(10px, 2vw, 18px);
@@ -716,7 +715,6 @@ button {
   border: 1px dashed var(--line-strong);
   border-radius: 22px;
   background: rgb(0 0 0 / 18%);
-  container-type: inline-size;
   min-width: 0;
   overflow: hidden;
 }
@@ -763,7 +761,7 @@ button {
   border-radius: 8px;
   background: var(--cell-face);
   color: var(--text);
-  font-size: clamp(0.55rem, calc(50cqi / var(--columns)), 1.05rem);
+  font-size: var(--cell-font, 0.9rem);
   letter-spacing: -0.04em;
   cursor: pointer;
   box-shadow: var(--cell-shadow);
