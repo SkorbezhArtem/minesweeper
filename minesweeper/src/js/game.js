@@ -44,6 +44,9 @@ import { icon } from './icons.js';
 let state = createInitialState();
 let theme = getSavedTheme();
 let lastLoadedSaveStamp = null;
+let celebrateTimeoutId = 0;
+let shakeTimeoutId = 0;
+let resultModalTimeoutId = 0;
 
 export function initGame() {
   createLayout();
@@ -122,6 +125,7 @@ function handleCellFlag(row, column) {
 
 function handleNewGame() {
   stopTimer();
+  cancelPendingResultEffects();
   clearSavedGame();
   lastLoadedSaveStamp = null;
   state = createInitialState(state.difficulty);
@@ -175,6 +179,7 @@ function handleSaveGame() {
 
 function handleRandomGame() {
   stopTimer();
+  cancelPendingResultEffects();
   clearSavedGame();
   lastLoadedSaveStamp = null;
   let next = DIFFICULTY_ORDER[Math.floor(Math.random() * DIFFICULTY_ORDER.length)];
@@ -193,6 +198,7 @@ function handleDifficultyChange(difficulty) {
   }
 
   stopTimer();
+  cancelPendingResultEffects();
   clearSavedGame();
   lastLoadedSaveStamp = null;
   state = createInitialState(difficulty || DEFAULT_DIFFICULTY);
@@ -234,6 +240,7 @@ function handleTimerTick() {
 function winGame() {
   state.status = GAME_STATUS.won;
   stopTimer();
+  cancelPendingResultEffects();
   clearSavedGame();
   saveScore({
     difficulty: state.difficulty,
@@ -243,13 +250,20 @@ function winGame() {
   playSound('win');
   setBoardCelebrate(true);
   renderGame(state, { fresh: false });
-  setTimeout(() => setBoardCelebrate(false), 1400);
-  setTimeout(() => showResultModal('won'), 220);
+  celebrateTimeoutId = setTimeout(() => {
+    celebrateTimeoutId = 0;
+    setBoardCelebrate(false);
+  }, 1400);
+  resultModalTimeoutId = setTimeout(() => {
+    resultModalTimeoutId = 0;
+    showResultModal('won');
+  }, 220);
 }
 
 function loseGame() {
   state.status = GAME_STATUS.lost;
   stopTimer();
+  cancelPendingResultEffects();
   clearSavedGame();
   state.board.flat().forEach((cell) => {
     if (cell.hasMine) {
@@ -259,8 +273,34 @@ function loseGame() {
   playSound('lose');
   setBoardShake(true);
   renderGame(state, { fresh: false });
-  setTimeout(() => setBoardShake(false), 600);
-  setTimeout(() => showResultModal('lost'), 220);
+  shakeTimeoutId = setTimeout(() => {
+    shakeTimeoutId = 0;
+    setBoardShake(false);
+  }, 600);
+  resultModalTimeoutId = setTimeout(() => {
+    resultModalTimeoutId = 0;
+    showResultModal('lost');
+  }, 220);
+}
+
+function cancelPendingResultEffects() {
+  if (celebrateTimeoutId !== 0) {
+    clearTimeout(celebrateTimeoutId);
+    celebrateTimeoutId = 0;
+  }
+
+  if (shakeTimeoutId !== 0) {
+    clearTimeout(shakeTimeoutId);
+    shakeTimeoutId = 0;
+  }
+
+  if (resultModalTimeoutId !== 0) {
+    clearTimeout(resultModalTimeoutId);
+    resultModalTimeoutId = 0;
+  }
+
+  setBoardCelebrate(false);
+  setBoardShake(false);
 }
 
 function showResultModal(outcome) {
