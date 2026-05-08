@@ -1,4 +1,15 @@
-import { STORAGE_KEYS, THEMES, WIN_SCORES_LIMIT } from './constants.js';
+import {
+  CELL_STATUS,
+  DIFFICULTIES,
+  DIFFICULTY_ORDER,
+  GAME_STATUS,
+  STORAGE_KEYS,
+  THEMES,
+  WIN_SCORES_LIMIT,
+} from './constants.js';
+
+const VALID_GAME_STATUSES = Object.values(GAME_STATUS);
+const VALID_CELL_STATUSES = Object.values(CELL_STATUS);
 
 export function saveGame(state) {
   localStorage.setItem(STORAGE_KEYS.save, JSON.stringify(state));
@@ -9,13 +20,13 @@ export function autosaveGame(state) {
 }
 
 export function loadGame() {
-  const manual = readJson(STORAGE_KEYS.save, null);
+  const manual = readValidatedSave(STORAGE_KEYS.save);
 
   if (manual !== null) {
     return manual;
   }
 
-  return readJson(STORAGE_KEYS.autosave, null);
+  return readValidatedSave(STORAGE_KEYS.autosave);
 }
 
 export function clearSavedGame() {
@@ -57,6 +68,113 @@ export function getSavedSound() {
 
 export function saveSound(isEnabled) {
   localStorage.setItem(STORAGE_KEYS.sound, isEnabled ? 'on' : 'off');
+}
+
+function readValidatedSave(key) {
+  const value = readJson(key, null);
+
+  if (value === null) {
+    return null;
+  }
+
+  if (!isValidSavedState(value)) {
+    localStorage.removeItem(key);
+    return null;
+  }
+
+  return value;
+}
+
+function isValidSavedState(value) {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    return false;
+  }
+
+  if (!DIFFICULTY_ORDER.includes(value.difficulty)) {
+    return false;
+  }
+
+  const expected = DIFFICULTIES[value.difficulty];
+
+  if (value.settings === null || typeof value.settings !== 'object') {
+    return false;
+  }
+
+  if (
+    value.settings.rows !== expected.rows
+    || value.settings.columns !== expected.columns
+    || value.settings.mines !== expected.mines
+  ) {
+    return false;
+  }
+
+  if (!VALID_GAME_STATUSES.includes(value.status)) {
+    return false;
+  }
+
+  if (typeof value.isFirstMove !== 'boolean') {
+    return false;
+  }
+
+  if (!Number.isInteger(value.moves) || value.moves < 0) {
+    return false;
+  }
+
+  if (!Number.isInteger(value.flagsLeft) || value.flagsLeft < 0 || value.flagsLeft > expected.mines) {
+    return false;
+  }
+
+  if (!Number.isInteger(value.elapsedSeconds) || value.elapsedSeconds < 0) {
+    return false;
+  }
+
+  if (!Array.isArray(value.board) || value.board.length !== expected.rows) {
+    return false;
+  }
+
+  for (let row = 0; row < expected.rows; row += 1) {
+    const rowCells = value.board[row];
+
+    if (!Array.isArray(rowCells) || rowCells.length !== expected.columns) {
+      return false;
+    }
+
+    for (let column = 0; column < expected.columns; column += 1) {
+      if (!isValidCell(rowCells[column], row, column)) {
+        return false;
+      }
+    }
+  }
+
+  if (value.savedAt !== undefined && typeof value.savedAt !== 'number') {
+    return false;
+  }
+
+  return true;
+}
+
+function isValidCell(cell, expectedRow, expectedColumn) {
+  if (cell === null || typeof cell !== 'object') {
+    return false;
+  }
+
+  if (cell.row !== expectedRow || cell.column !== expectedColumn) {
+    return false;
+  }
+
+  if (!VALID_CELL_STATUSES.includes(cell.status)) {
+    return false;
+  }
+
+  if (typeof cell.hasMine !== 'boolean') {
+    return false;
+  }
+
+  if (!Number.isInteger(cell.adjacentMines) || cell.adjacentMines < 0 || cell.adjacentMines > 8) {
+    return false;
+  }
+
+  return true;
 }
 
 function readJson(key, fallbackValue) {
