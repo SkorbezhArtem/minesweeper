@@ -483,7 +483,7 @@ function renderMessage(state) {
       'win',
     );
   } else if (state.status === GAME_STATUS.lost) {
-    flashMessage('Game over. Try again.', 'lose');
+    flashMessage('Game over. Try again', 'lose');
   }
 }
 
