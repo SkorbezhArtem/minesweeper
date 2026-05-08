@@ -159,8 +159,11 @@ function handleContinueGame() {
 }
 
 function handleSaveGame() {
-  if (state.status === GAME_STATUS.idle) {
-    flashMessage('Open at least one cell before saving.', 'warn');
+  if (state.status !== GAME_STATUS.playing) {
+    const reason = state.status === GAME_STATUS.idle
+      ? 'Open at least one cell before saving.'
+      : 'Mission is already finished — start a new game first.';
+    flashMessage(reason, 'warn');
     return;
   }
 
