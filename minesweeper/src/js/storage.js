@@ -35,17 +35,47 @@ export function clearSavedGame() {
 }
 
 export function getScores() {
-  const scores = readJson(STORAGE_KEYS.scores, []);
-  return Array.isArray(scores) ? scores : [];
+  const raw = readJson(STORAGE_KEYS.scores, []);
+
+  if (!Array.isArray(raw)) {
+    return [];
+  }
+
+  return raw.filter(isValidScore);
 }
 
 export function saveScore(score) {
   const enriched = { ...score, savedAt: Date.now() };
   const scores = [enriched, ...getScores()]
+    .filter(isValidScore)
     .sort((a, b) => a.seconds - b.seconds)
     .slice(0, WIN_SCORES_LIMIT);
   localStorage.setItem(STORAGE_KEYS.scores, JSON.stringify(scores));
   return scores;
+}
+
+function isValidScore(score) {
+  if (score === null || typeof score !== 'object') {
+    return false;
+  }
+
+  if (!DIFFICULTY_ORDER.includes(score.difficulty)) {
+    return false;
+  }
+
+  if (!Number.isInteger(score.seconds) || score.seconds < 0) {
+    return false;
+  }
+
+  if (!Number.isInteger(score.moves) || score.moves < 0) {
+    return false;
+  }
+
+  if (score.savedAt !== undefined && typeof score.savedAt !== 'number') {
+    return false;
+  }
+
+  return true;
 }
 
 export function clearScores() {

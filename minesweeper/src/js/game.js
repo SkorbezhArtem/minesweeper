@@ -361,25 +361,22 @@ function showScoresModal() {
       </div>
     `;
   } else {
-    body.innerHTML = `
-      <div class="scoreboard__head">
-        <span>#</span><span>Mission</span><span>Time</span><span>Moves</span>
-      </div>
-      <ul class="scoreboard__list">
-        ${scores.map((score, index) => `
-          <li class="scoreboard__row scoreboard__row--rank-${index + 1}">
-            <span class="scoreboard__rank">${rankBadge(index + 1)}</span>
-            <span class="scoreboard__mission">
-              <span class="dot dot--${score.difficulty}" aria-hidden="true"></span>
-              ${DIFFICULTIES[score.difficulty]?.label || score.difficulty}
-              <small>${DIFFICULTIES[score.difficulty]?.short || ''}</small>
-            </span>
-            <span class="scoreboard__time mono">${formatClock(score.seconds)}</span>
-            <span class="scoreboard__moves">${score.moves}</span>
-          </li>
-        `).join('')}
-      </ul>
-    `;
+    const head = document.createElement('div');
+    head.className = 'scoreboard__head';
+    ['#', 'Mission', 'Time', 'Moves'].forEach((label) => {
+      const span = document.createElement('span');
+      span.textContent = label;
+      head.append(span);
+    });
+
+    const list = document.createElement('ul');
+    list.className = 'scoreboard__list';
+
+    scores.forEach((score, index) => {
+      list.append(buildScoreRow(score, index));
+    });
+
+    body.append(head, list);
   }
 
   const footer = document.createElement('div');
@@ -416,5 +413,40 @@ function rankBadge(rank) {
     return '🥉';
   }
 
-  return rank;
+  return String(rank);
+}
+
+function buildScoreRow(score, index) {
+  const rank = index + 1;
+  const definition = DIFFICULTIES[score.difficulty];
+
+  const row = document.createElement('li');
+  row.className = `scoreboard__row scoreboard__row--rank-${rank}`;
+
+  const rankCell = document.createElement('span');
+  rankCell.className = 'scoreboard__rank';
+  rankCell.textContent = rankBadge(rank);
+
+  const mission = document.createElement('span');
+  mission.className = 'scoreboard__mission';
+
+  const dot = document.createElement('span');
+  dot.className = `dot dot--${score.difficulty}`;
+  dot.setAttribute('aria-hidden', 'true');
+  mission.append(dot, document.createTextNode(definition.label));
+
+  const short = document.createElement('small');
+  short.textContent = definition.short;
+  mission.append(short);
+
+  const time = document.createElement('span');
+  time.className = 'scoreboard__time mono';
+  time.textContent = formatClock(score.seconds);
+
+  const moves = document.createElement('span');
+  moves.className = 'scoreboard__moves';
+  moves.textContent = String(score.moves);
+
+  row.append(rankCell, mission, time, moves);
+  return row;
 }
