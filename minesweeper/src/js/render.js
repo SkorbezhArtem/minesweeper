@@ -167,6 +167,21 @@ export function bindEvents(handlers) {
     handlers.onCellFlag(Number(cellButton.dataset.row), Number(cellButton.dataset.column));
   });
 
+  elements.board.addEventListener('keydown', (event) => {
+    if (event.key !== 'f' && event.key !== 'F') {
+      return;
+    }
+
+    const cellButton = event.target.closest('[data-cell]');
+
+    if (cellButton === null || cellButton.disabled) {
+      return;
+    }
+
+    event.preventDefault();
+    handlers.onCellFlag(Number(cellButton.dataset.row), Number(cellButton.dataset.column));
+  });
+
   elements.app.addEventListener('click', (event) => {
     const actionElement = event.target.closest('[data-action]');
 
