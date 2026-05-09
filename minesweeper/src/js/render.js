@@ -365,7 +365,7 @@ function rebuildBoard(state) {
     button.dataset.cell = '';
     button.dataset.row = cell.row;
     button.dataset.column = cell.column;
-    button.setAttribute('aria-label', `Cell ${cell.row + 1}, ${cell.column + 1}`);
+    button.setAttribute('aria-label', describeCell(cell));
     elements.board.append(button);
     cellNodes.set(cellKey(cell.row, cell.column), button);
   });
@@ -463,6 +463,7 @@ function updateCell(cell, gameStatus) {
     button.classList.toggle('cell--flagged', cell.status === CELL_STATUS.flagged);
     button.classList.toggle('cell--mine', isMine);
     button.classList.toggle('cell--zero', cell.status === CELL_STATUS.opened && !cell.hasMine && cell.adjacentMines === 0);
+    button.setAttribute('aria-label', describeCell(cell));
   }
 
   if (cell.hasMine) {
@@ -470,6 +471,29 @@ function updateCell(cell, gameStatus) {
   } else {
     delete button.dataset.hasMine;
   }
+}
+
+function describeCell(cell) {
+  const base = `Cell row ${cell.row + 1}, column ${cell.column + 1}`;
+
+  if (cell.status === CELL_STATUS.flagged) {
+    return `${base}, flagged`;
+  }
+
+  if (cell.status === CELL_STATUS.opened) {
+    if (cell.hasMine) {
+      return `${base}, mine`;
+    }
+
+    if (cell.adjacentMines === 0) {
+      return `${base}, empty`;
+    }
+
+    const noun = cell.adjacentMines === 1 ? 'adjacent mine' : 'adjacent mines';
+    return `${base}, ${cell.adjacentMines} ${noun}`;
+  }
+
+  return `${base}, hidden`;
 }
 
 function renderMessage(state) {
