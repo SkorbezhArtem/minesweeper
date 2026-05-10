@@ -44,6 +44,9 @@ import { icon } from './icons.js';
 let state = createInitialState();
 let theme = getSavedTheme();
 let lastLoadedSaveStamp = null;
+let celebrateTimeoutId = 0;
+let shakeTimeoutId = 0;
+let resultModalTimeoutId = 0;
 
 export function initGame() {
   createLayout();
@@ -122,6 +125,7 @@ function handleCellFlag(row, column) {
 
 function handleNewGame() {
   stopTimer();
+  cancelPendingResultEffects();
   clearSavedGame();
   lastLoadedSaveStamp = null;
   state = createInitialState(state.difficulty);
@@ -159,8 +163,11 @@ function handleContinueGame() {
 }
 
 function handleSaveGame() {
-  if (state.status === GAME_STATUS.idle) {
-    flashMessage('Open at least one cell before saving.', 'warn');
+  if (state.status !== GAME_STATUS.playing) {
+    const reason = state.status === GAME_STATUS.idle
+      ? 'Open at least one cell before saving.'
+      : 'Mission is already finished — start a new game first.';
+    flashMessage(reason, 'warn');
     return;
   }
 
@@ -172,6 +179,7 @@ function handleSaveGame() {
 
 function handleRandomGame() {
   stopTimer();
+  cancelPendingResultEffects();
   clearSavedGame();
   lastLoadedSaveStamp = null;
   let next = DIFFICULTY_ORDER[Math.floor(Math.random() * DIFFICULTY_ORDER.length)];
@@ -190,6 +198,7 @@ function handleDifficultyChange(difficulty) {
   }
 
   stopTimer();
+  cancelPendingResultEffects();
   clearSavedGame();
   lastLoadedSaveStamp = null;
   state = createInitialState(difficulty || DEFAULT_DIFFICULTY);
@@ -231,6 +240,7 @@ function handleTimerTick() {
 function winGame() {
   state.status = GAME_STATUS.won;
   stopTimer();
+  cancelPendingResultEffects();
   clearSavedGame();
   saveScore({
     difficulty: state.difficulty,
@@ -240,13 +250,20 @@ function winGame() {
   playSound('win');
   setBoardCelebrate(true);
   renderGame(state, { fresh: false });
-  setTimeout(() => setBoardCelebrate(false), 1400);
-  setTimeout(() => showResultModal('won'), 220);
+  celebrateTimeoutId = setTimeout(() => {
+    celebrateTimeoutId = 0;
+    setBoardCelebrate(false);
+  }, 1400);
+  resultModalTimeoutId = setTimeout(() => {
+    resultModalTimeoutId = 0;
+    showResultModal('won');
+  }, 220);
 }
 
 function loseGame() {
   state.status = GAME_STATUS.lost;
   stopTimer();
+  cancelPendingResultEffects();
   clearSavedGame();
   state.board.flat().forEach((cell) => {
     if (cell.hasMine) {
@@ -256,8 +273,34 @@ function loseGame() {
   playSound('lose');
   setBoardShake(true);
   renderGame(state, { fresh: false });
-  setTimeout(() => setBoardShake(false), 600);
-  setTimeout(() => showResultModal('lost'), 220);
+  shakeTimeoutId = setTimeout(() => {
+    shakeTimeoutId = 0;
+    setBoardShake(false);
+  }, 600);
+  resultModalTimeoutId = setTimeout(() => {
+    resultModalTimeoutId = 0;
+    showResultModal('lost');
+  }, 220);
+}
+
+function cancelPendingResultEffects() {
+  if (celebrateTimeoutId !== 0) {
+    clearTimeout(celebrateTimeoutId);
+    celebrateTimeoutId = 0;
+  }
+
+  if (shakeTimeoutId !== 0) {
+    clearTimeout(shakeTimeoutId);
+    shakeTimeoutId = 0;
+  }
+
+  if (resultModalTimeoutId !== 0) {
+    clearTimeout(resultModalTimeoutId);
+    resultModalTimeoutId = 0;
+  }
+
+  setBoardCelebrate(false);
+  setBoardShake(false);
 }
 
 function showResultModal(outcome) {
@@ -318,25 +361,22 @@ function showScoresModal() {
       </div>
     `;
   } else {
-    body.innerHTML = `
-      <div class="scoreboard__head">
-        <span>#</span><span>Mission</span><span>Time</span><span>Moves</span>
-      </div>
-      <ul class="scoreboard__list">
-        ${scores.map((score, index) => `
-          <li class="scoreboard__row scoreboard__row--rank-${index + 1}">
-            <span class="scoreboard__rank">${rankBadge(index + 1)}</span>
-            <span class="scoreboard__mission">
-              <span class="dot dot--${score.difficulty}" aria-hidden="true"></span>
-              ${DIFFICULTIES[score.difficulty]?.label || score.difficulty}
-              <small>${DIFFICULTIES[score.difficulty]?.short || ''}</small>
-            </span>
-            <span class="scoreboard__time mono">${formatClock(score.seconds)}</span>
-            <span class="scoreboard__moves">${score.moves}</span>
-          </li>
-        `).join('')}
-      </ul>
-    `;
+    const head = document.createElement('div');
+    head.className = 'scoreboard__head';
+    ['#', 'Mission', 'Time', 'Moves'].forEach((label) => {
+      const span = document.createElement('span');
+      span.textContent = label;
+      head.append(span);
+    });
+
+    const list = document.createElement('ul');
+    list.className = 'scoreboard__list';
+
+    scores.forEach((score, index) => {
+      list.append(buildScoreRow(score, index));
+    });
+
+    body.append(head, list);
   }
 
   const footer = document.createElement('div');
@@ -373,5 +413,40 @@ function rankBadge(rank) {
     return '🥉';
   }
 
-  return rank;
+  return String(rank);
+}
+
+function buildScoreRow(score, index) {
+  const rank = index + 1;
+  const definition = DIFFICULTIES[score.difficulty];
+
+  const row = document.createElement('li');
+  row.className = `scoreboard__row scoreboard__row--rank-${rank}`;
+
+  const rankCell = document.createElement('span');
+  rankCell.className = 'scoreboard__rank';
+  rankCell.textContent = rankBadge(rank);
+
+  const mission = document.createElement('span');
+  mission.className = 'scoreboard__mission';
+
+  const dot = document.createElement('span');
+  dot.className = `dot dot--${score.difficulty}`;
+  dot.setAttribute('aria-hidden', 'true');
+  mission.append(dot, document.createTextNode(definition.label));
+
+  const short = document.createElement('small');
+  short.textContent = definition.short;
+  mission.append(short);
+
+  const time = document.createElement('span');
+  time.className = 'scoreboard__time mono';
+  time.textContent = formatClock(score.seconds);
+
+  const moves = document.createElement('span');
+  moves.className = 'scoreboard__moves';
+  moves.textContent = String(score.moves);
+
+  row.append(rankCell, mission, time, moves);
+  return row;
 }

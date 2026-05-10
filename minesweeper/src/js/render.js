@@ -167,6 +167,21 @@ export function bindEvents(handlers) {
     handlers.onCellFlag(Number(cellButton.dataset.row), Number(cellButton.dataset.column));
   });
 
+  elements.board.addEventListener('keydown', (event) => {
+    if (event.key !== 'f' && event.key !== 'F') {
+      return;
+    }
+
+    const cellButton = event.target.closest('[data-cell]');
+
+    if (cellButton === null || cellButton.disabled) {
+      return;
+    }
+
+    event.preventDefault();
+    handlers.onCellFlag(Number(cellButton.dataset.row), Number(cellButton.dataset.column));
+  });
+
   elements.app.addEventListener('click', (event) => {
     const actionElement = event.target.closest('[data-action]');
 
@@ -365,7 +380,7 @@ function rebuildBoard(state) {
     button.dataset.cell = '';
     button.dataset.row = cell.row;
     button.dataset.column = cell.column;
-    button.setAttribute('aria-label', `Cell ${cell.row + 1}, ${cell.column + 1}`);
+    button.setAttribute('aria-label', describeCell(cell));
     elements.board.append(button);
     cellNodes.set(cellKey(cell.row, cell.column), button);
   });
@@ -463,6 +478,7 @@ function updateCell(cell, gameStatus) {
     button.classList.toggle('cell--flagged', cell.status === CELL_STATUS.flagged);
     button.classList.toggle('cell--mine', isMine);
     button.classList.toggle('cell--zero', cell.status === CELL_STATUS.opened && !cell.hasMine && cell.adjacentMines === 0);
+    button.setAttribute('aria-label', describeCell(cell));
   }
 
   if (cell.hasMine) {
@@ -470,6 +486,29 @@ function updateCell(cell, gameStatus) {
   } else {
     delete button.dataset.hasMine;
   }
+}
+
+function describeCell(cell) {
+  const base = `Cell row ${cell.row + 1}, column ${cell.column + 1}`;
+
+  if (cell.status === CELL_STATUS.flagged) {
+    return `${base}, flagged`;
+  }
+
+  if (cell.status === CELL_STATUS.opened) {
+    if (cell.hasMine) {
+      return `${base}, mine`;
+    }
+
+    if (cell.adjacentMines === 0) {
+      return `${base}, empty`;
+    }
+
+    const noun = cell.adjacentMines === 1 ? 'adjacent mine' : 'adjacent mines';
+    return `${base}, ${cell.adjacentMines} ${noun}`;
+  }
+
+  return `${base}, hidden`;
 }
 
 function renderMessage(state) {
@@ -483,7 +522,7 @@ function renderMessage(state) {
       'win',
     );
   } else if (state.status === GAME_STATUS.lost) {
-    flashMessage('Game over. Try again.', 'lose');
+    flashMessage('Game over. Try again', 'lose');
   }
 }
 
