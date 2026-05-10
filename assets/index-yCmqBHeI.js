@@ -1,0 +1,142 @@
+(function(){const n=document.createElement("link").relList;if(n&&n.supports&&n.supports("modulepreload"))return;for(const a of document.querySelectorAll('link[rel="modulepreload"]'))s(a);new MutationObserver(a=>{for(const o of a)if(o.type==="childList")for(const l of o.addedNodes)l.tagName==="LINK"&&l.rel==="modulepreload"&&s(l)}).observe(document,{childList:!0,subtree:!0});function t(a){const o={};return a.integrity&&(o.integrity=a.integrity),a.referrerPolicy&&(o.referrerPolicy=a.referrerPolicy),a.crossOrigin==="use-credentials"?o.credentials="include":a.crossOrigin==="anonymous"?o.credentials="omit":o.credentials="same-origin",o}function s(a){if(a.ep)return;a.ep=!0;const o=t(a);fetch(a.href,o)}})();const u={idle:"idle",playing:"playing",won:"won",lost:"lost"},c={hidden:"hidden",opened:"opened",flagged:"flagged"},w={easy:{label:"Easy",summary:"10 × 10 · 10 mines",short:"10×10",rows:10,columns:10,mines:10},medium:{label:"Medium",summary:"15 × 15 · 40 mines",short:"15×15",rows:15,columns:15,mines:40},hard:{label:"Hard",summary:"25 × 25 · 99 mines",short:"25×25",rows:25,columns:25,mines:99}},v=["easy","medium","hard"],Z="easy",p={save:"rss-minesweeper-save",autosave:"rss-minesweeper-autosave",scores:"rss-minesweeper-scores",theme:"rss-minesweeper-theme",sound:"rss-minesweeper-sound"},_={light:"light",dark:"dark"},ge=10,he=[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];function ve(e,n){return{row:e,column:n,status:c.hidden,hasMine:!1,adjacentMines:0}}function ye(e,n){return Array.from({length:e},(t,s)=>Array.from({length:n},(a,o)=>ve(s,o)))}function be(e,n,t){return n>=0&&n<e.length&&t>=0&&t<e[0].length}function ee(e,n,t){return he.map(([s,a])=>({row:n+s,column:t+a})).filter(s=>be(e,s.row,s.column)).map(s=>e[s.row][s.column])}function _e(e,n,t,s){const a=e.flat().filter(l=>l.row!==t||l.column!==s);Me(a).slice(0,n).forEach(l=>{l.hasMine=!0})}function Me(e){const n=[...e];for(let t=n.length-1;t>0;t-=1){const s=Math.floor(Math.random()*(t+1));[n[t],n[s]]=[n[s],n[t]]}return n}function Se(e){e.flat().forEach(n=>{n.adjacentMines=ee(e,n.row,n.column).filter(t=>t.hasMine).length})}function we(e,n,t,s){_e(e,n,t,s),Se(e)}function Le(e,n){const t=[n],s=[];let a=0;for(;t.length>0;){const o=t.pop();o.status!==c.opened&&(o.status===c.flagged&&(a+=1),o.status=c.opened,s.push(o),!(o.hasMine||o.adjacentMines>0)&&ee(e,o.row,o.column).filter(l=>l.status!==c.opened).forEach(l=>t.push(l)))}return{openedCells:s,removedFlags:a}}function Ee(e){return e.status===c.opened?0:e.status===c.flagged?(e.status=c.hidden,1):(e.status=c.flagged,-1)}function Te(e){return e.flat().filter(n=>!n.hasMine&&n.status!==c.opened).length}const $e=Object.values(u),Ce=Object.values(c);function Ne(e){localStorage.setItem(p.save,JSON.stringify(e))}function U(e){localStorage.setItem(p.autosave,JSON.stringify(e))}function ze(){const e=K(p.save);return e!==null?e:K(p.autosave)}function A(){localStorage.removeItem(p.save),localStorage.removeItem(p.autosave)}function te(){const e=se(p.scores,[]);return Array.isArray(e)?e.filter(ne):[]}function xe(e){const t=[{...e,savedAt:Date.now()},...te()].filter(ne).sort((s,a)=>s.seconds-a.seconds).slice(0,ge);return localStorage.setItem(p.scores,JSON.stringify(t)),t}function ne(e){return!(e===null||typeof e!="object"||!v.includes(e.difficulty)||!Number.isInteger(e.seconds)||e.seconds<0||!Number.isInteger(e.moves)||e.moves<0||e.savedAt!==void 0&&typeof e.savedAt!="number")}function ke(){localStorage.removeItem(p.scores)}function Ae(){const e=localStorage.getItem(p.theme);return e===_.light||e===_.dark?e:_.dark}function Ie(e){localStorage.setItem(p.theme,e)}function Fe(){const e=localStorage.getItem(p.sound);return e===null?!0:e==="on"}function Oe(e){localStorage.setItem(p.sound,e?"on":"off")}function K(e){const n=se(e,null);return n===null?null:He(n)?n:(localStorage.removeItem(e),null)}function He(e){if(e===null||typeof e!="object"||Array.isArray(e)||!v.includes(e.difficulty))return!1;const n=w[e.difficulty];if(e.settings===null||typeof e.settings!="object"||e.settings.rows!==n.rows||e.settings.columns!==n.columns||e.settings.mines!==n.mines||!$e.includes(e.status)||typeof e.isFirstMove!="boolean"||!Number.isInteger(e.moves)||e.moves<0||!Number.isInteger(e.flagsLeft)||e.flagsLeft<0||e.flagsLeft>n.mines||!Number.isInteger(e.elapsedSeconds)||e.elapsedSeconds<0||!Array.isArray(e.board)||e.board.length!==n.rows)return!1;for(let t=0;t<n.rows;t+=1){const s=e.board[t];if(!Array.isArray(s)||s.length!==n.columns)return!1;for(let a=0;a<n.columns;a+=1)if(!qe(s[a],t,a))return!1}return!(e.savedAt!==void 0&&typeof e.savedAt!="number")}function qe(e,n,t){return!(e===null||typeof e!="object"||e.row!==n||e.column!==t||!Ce.includes(e.status)||typeof e.hasMine!="boolean"||!Number.isInteger(e.adjacentMines)||e.adjacentMines<0||e.adjacentMines>8)}function se(e,n){const t=localStorage.getItem(e);if(t===null)return n;try{return JSON.parse(t)}catch{return localStorage.removeItem(e),n}}let T=null,$=Fe();const J={reveal:{frequency:540,duration:.06,type:"sine",gain:.07},flag:{frequency:380,duration:.06,type:"square",gain:.06},unflag:{frequency:280,duration:.05,type:"square",gain:.05},win:{frequency:760,duration:.18,type:"triangle",gain:.09},lose:{frequency:110,duration:.32,type:"sawtooth",gain:.09}};function Ge(){return $=!$,Oe($),$}function je(){return $}function q(e){if(!$||!J[e])return;T===null&&(T=new AudioContext);const{frequency:n,duration:t,type:s,gain:a}=J[e],o=T.createOscillator(),l=T.createGain();o.type=s,o.frequency.value=n,l.gain.value=a,o.connect(l),l.connect(T.destination),o.start(),o.stop(T.currentTime+t)}let O=null;function ae(e){L(),O=setInterval(e,1e3)}function L(){O!==null&&(clearInterval(O),O=null)}function V(e){const n=Math.max(0,Math.floor(e)),t=Math.floor(n/60),s=n%60;return`${Y(t)}:${Y(s)}`}function Y(e){return String(e).padStart(2,"0")}const De={bomb:'<circle cx="11" cy="13" r="6"/><path d="M14.5 8 17 5.5"/><path d="M17 5h2v2"/><path d="M16.5 8.5 18 7"/><circle cx="6" cy="14" r="0.6" fill="currentColor"/>',flag:'<path d="M4 21v-7"/><path d="M4 4h11l-1.5 4L15 12H4"/>',play:'<polygon points="6 4 20 12 6 20 6 4"/>',refresh:'<path d="M3 12a9 9 0 1 0 3-6.7"/><polyline points="3 4 3 9 8 9"/>',save:'<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>',resume:'<polygon points="5 3 19 12 5 21 5 3"/>',shuffle:'<path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/>',bulb:'<path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c1 .9 1 1.8 1 3.3h6c0-1.5 0-2.4 1-3.3A7 7 0 0 0 12 2z"/>',trophy:'<path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 4H4v3a4 4 0 0 0 4 4"/><path d="M17 4h3v3a4 4 0 0 1-4 4"/>',moon:'<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>',sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.9 4.9l1.4 1.4"/><path d="M17.7 17.7l1.4 1.4"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M4.9 19.1l1.4-1.4"/><path d="M17.7 6.3l1.4-1.4"/>',volume:'<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M16 9a4 4 0 0 1 0 6"/><path d="M19 6a8 8 0 0 1 0 12"/>',mute:'<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="22" y1="9" x2="16" y2="15"/><line x1="16" y1="9" x2="22" y2="15"/>',close:'<line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/>',chevron:'<polyline points="6 9 12 15 18 9"/>',check:'<polyline points="4 12 10 18 20 6"/>',clock:'<circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 16 14"/>',move:'<polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/>',spark:'<path d="M12 2v4"/><path d="M12 18v4"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M5 5l3 3"/><path d="M16 16l3 3"/><path d="M5 19l3-3"/><path d="M16 8l3-3"/>',medal:'<circle cx="12" cy="14" r="6"/><path d="M8 14l-3-9h14l-3 9"/>',shield:'<path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5z"/>'};function d(e,n={}){const t=De[e];if(t===void 0)return"";const s=n.size||18,a=n.stroke||2;return`<svg${n.className?` class="${n.className}"`:""} width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${a}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${t}</svg>`}const i={},R=new Map,Re=8.8,Be=16.8;let m={trigger:null},M={closeHandler:null},j=0,F=null;function Pe(){document.body.innerHTML="";const e=document.createElement("main");e.className="app",e.innerHTML=`
+    <header class="brand">
+      <div class="brand__mark" aria-hidden="true">
+        ${d("shield",{size:22})}
+      </div>
+      <div class="brand__text">
+        <span class="brand__eyebrow">RSS / Vanilla JS</span>
+        <span class="brand__title">Minesweeper</span>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="hero__head">
+        <span class="hero__label">${d("spark",{size:12})} <span>Mission status</span></span>
+      </div>
+      <div class="hero__hud">
+        <div class="hud-card hud-card--time">
+          <span class="hud-card__label">${d("clock",{size:12})} Time</span>
+          <strong class="hud-card__value mono" data-stat="time">00:00</strong>
+          <span class="hud-card__pulse" aria-hidden="true"></span>
+        </div>
+        <div class="hud-card">
+          <span class="hud-card__label">${d("move",{size:12})} Moves</span>
+          <strong class="hud-card__value" data-stat="moves">0</strong>
+        </div>
+        <div class="hud-card">
+          <span class="hud-card__label">${d("flag",{size:12})} Flags</span>
+          <strong class="hud-card__value"><span data-stat="flags">0</span><small>/<span data-stat="mines">0</span></small></strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="toolbar" data-toolbar>
+      <div class="toolbar__group" data-group="puzzle">
+        <span class="toolbar__label">${d("spark",{size:12})} Mission</span>
+        <div class="toolbar__row" data-difficulty></div>
+        <button class="pill" data-action="random" type="button">
+          ${d("shuffle",{size:16})}
+          <span>Random</span>
+        </button>
+      </div>
+      <div class="toolbar__group" data-group="game">
+        <span class="toolbar__label">${d("play",{size:12})} Match</span>
+        <div class="toolbar__row">
+          <button class="pill" data-action="new-game" type="button">
+            ${d("refresh",{size:16})}
+            <span>New game</span>
+          </button>
+          <button class="pill" data-action="save-game" type="button">
+            ${d("save",{size:16})}
+            <span>Save</span>
+          </button>
+          <button class="pill" data-action="continue-game" type="button">
+            ${d("resume",{size:16})}
+            <span>Continue</span>
+          </button>
+        </div>
+      </div>
+      <div class="toolbar__group" data-group="more">
+        <span class="toolbar__label">${d("trophy",{size:12})} More</span>
+        <div class="toolbar__row">
+          <button class="pill" data-action="open-scores" type="button">
+            ${d("trophy",{size:16})}
+            <span>Top 10</span>
+          </button>
+          <button class="pill pill--icon" data-action="toggle-theme" type="button" aria-label="Toggle theme" data-theme-button>
+            ${d("moon",{size:16})}
+          </button>
+          <button class="pill pill--icon" data-action="toggle-sound" type="button" aria-label="Toggle sound" data-sound-button>
+            ${d("volume",{size:16})}
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="board-wrap">
+      <div class="board-aura" aria-hidden="true"></div>
+      <div class="board-frame">
+        <div class="board" data-board></div>
+      </div>
+      <p class="message" data-message>Open any cell to start.</p>
+    </section>
+
+    <footer class="appfoot">
+      <span class="appfoot__legend">
+        <span class="dot dot--safe"></span> safe tile
+        <span class="dot dot--flag"></span> flag (RMB)
+        <span class="dot dot--mine"></span> mine
+      </span>
+      <span class="appfoot__credit">
+        <span data-cheat-trigger>SkorbezhArtem</span> · <a href="https://github.com/SkorbezhArtem/minesweeper" target="_blank" rel="noreferrer">source</a>
+      </span>
+    </footer>
+  `,document.body.append(e),i.app=e,i.toolbar=e.querySelector("[data-toolbar]"),i.board=e.querySelector("[data-board]"),i.boardWrap=e.querySelector(".board-wrap"),i.message=e.querySelector("[data-message]"),i.timeStat=e.querySelector('[data-stat="time"]'),i.movesStat=e.querySelector('[data-stat="moves"]'),i.flagsStat=e.querySelector('[data-stat="flags"]'),i.minesStat=e.querySelector('[data-stat="mines"]'),i.themeButton=e.querySelector("[data-theme-button]"),i.soundButton=e.querySelector("[data-sound-button]"),i.difficultyHost=e.querySelector("[data-difficulty]"),Ve()}function We(e){i.board.addEventListener("click",t=>{const s=t.target.closest("[data-cell]");s!==null&&e.onCellOpen(Number(s.dataset.row),Number(s.dataset.column))}),i.board.addEventListener("contextmenu",t=>{const s=t.target.closest("[data-cell]");s!==null&&(t.preventDefault(),e.onCellFlag(Number(s.dataset.row),Number(s.dataset.column)))}),i.board.addEventListener("keydown",t=>{if(t.key!=="f"&&t.key!=="F")return;const s=t.target.closest("[data-cell]");s===null||s.disabled||(t.preventDefault(),e.onCellFlag(Number(s.dataset.row),Number(s.dataset.column)))}),i.app.addEventListener("click",t=>{const s=t.target.closest("[data-action]");if(s===null)return;const o={"new-game":e.onNewGame,"continue-game":e.onContinueGame,"save-game":e.onSaveGame,random:e.onRandomGame,"open-scores":e.onOpenScores,"toggle-theme":e.onToggleTheme,"toggle-sound":e.onToggleSound}[s.dataset.action];typeof o=="function"&&o()});const n=i.app.querySelector("[data-cheat-trigger]");n!==null&&n.addEventListener("dblclick",t=>{t.preventDefault(),i.board.classList.toggle("board--cheat")}),Ye(e.onDifficultyChange)}function y(e,n={}){n.fresh!==!1&&i.board.dataset.signature!==ce(e)&&Ue(e),e.board.flat().forEach(t=>Ke(t,e.status)),oe(e),Je(e),Xe(e.difficulty)}function oe(e){i.timeStat.textContent=V(e.elapsedSeconds),i.movesStat.textContent=e.moves,i.flagsStat.textContent=e.flagsLeft,i.minesStat.textContent=e.settings.mines,i.timeStat.parentElement.classList.toggle("hud-card--running",e.status===u.playing)}function re(e){document.documentElement.dataset.theme=e,i.themeButton.innerHTML=e===_.dark?d("sun",{size:16}):d("moon",{size:16}),i.themeButton.setAttribute("aria-label",e===_.dark?"Switch to light theme":"Switch to dark theme")}function ie(){const e=je();i.soundButton.innerHTML=e?d("volume",{size:16}):d("mute",{size:16}),i.soundButton.setAttribute("aria-label",e?"Mute sound":"Enable sound"),i.soundButton.classList.toggle("pill--muted",!e)}function g(e,n="info"){const t=i.message;t.textContent=e,t.dataset.tone=n,t.classList.remove("message--in"),t.offsetWidth,t.classList.add("message--in")}function B(e){i.boardWrap.classList.toggle("board-wrap--win",e)}function P(e){i.boardWrap.classList.toggle("board-wrap--lose",e)}function le({title:e,eyebrow:n,body:t,footer:s,onClose:a}){H();const o=document.createElement("div");o.className="modal",o.dataset.modal="",o.innerHTML=`
+    <div class="modal__panel" role="dialog" aria-modal="true">
+      <button class="modal__close" data-modal-close type="button" aria-label="Close">
+        ${d("close",{size:18})}
+      </button>
+      <div class="modal__head">
+        ${n?`<p class="modal__eyebrow">${n}</p>`:""}
+        <h2 class="modal__title">${e}</h2>
+      </div>
+      <div class="modal__body" data-modal-body></div>
+      ${s?'<div class="modal__footer" data-modal-footer></div>':""}
+    </div>
+  `;const l=o.querySelector("[data-modal-body]"),f=o.querySelector("[data-modal-footer]");t instanceof Node?l.append(t):typeof t=="string"&&(l.innerHTML=t),s instanceof Node&&f?f.append(s):typeof s=="string"&&f&&(f.innerHTML=s),document.body.append(o),document.body.classList.add("has-modal"),requestAnimationFrame(()=>o.classList.add("modal--open"));const h=()=>H();o.addEventListener("click",b=>{(b.target===o||b.target.closest("[data-modal-close]"))&&h()});const E=b=>{b.key==="Escape"&&h()};return document.addEventListener("keydown",E),M={overlay:o,closeHandler:()=>{document.removeEventListener("keydown",E),typeof a=="function"&&a()}},o}function H(){var n;if(!M.overlay)return;const e=M.overlay;(n=M.closeHandler)==null||n.call(M),e.classList.remove("modal--open"),setTimeout(()=>{e.remove(),document.body.classList.remove("has-modal")},180),M={closeHandler:null}}function Ue(e){R.clear(),i.board.innerHTML="",i.board.style.setProperty("--columns",e.settings.columns),i.board.dataset.size=e.difficulty,i.board.dataset.signature=ce(e),e.board.flat().forEach(n=>{const t=document.createElement("button");t.className="cell",t.type="button",t.dataset.cell="",t.dataset.row=n.row,t.dataset.column=n.column,t.setAttribute("aria-label",de(n)),i.board.append(t),R.set(ue(n.row,n.column),t)}),W()}function W(){if(i.board===void 0)return;const e=i.board.clientWidth,n=i.board.style.getPropertyValue("--columns").trim(),t=Number.parseInt(n,10);if(!Number.isFinite(t)||t<=0||e<=0)return;const s=Math.max(Re,Math.min(Be,e/t*.5));i.board.style.setProperty("--cell-font",`${s}px`)}function Ve(){if(typeof ResizeObserver>"u"||i.board===void 0){W();return}F!==null&&F.disconnect(),F=new ResizeObserver(()=>{j===0&&(j=requestAnimationFrame(()=>{j=0,W()}))}),F.observe(i.board)}function Ke(e,n){const t=R.get(ue(e.row,e.column));if(t===void 0)return;t.disabled=n===u.won||n===u.lost;const s=t.dataset.status,a=t.dataset.mines||"",o=t.classList.contains("cell--mine");let l="",f="",h=!1;e.status===c.flagged?f=Ze():e.status===c.opened&&(e.hasMine?(f=et(),h=!0):e.adjacentMines>0&&(f=String(e.adjacentMines),l=String(e.adjacentMines))),(s!==e.status||a!==l||o!==h)&&(t.dataset.status=e.status,l?t.dataset.mines=l:delete t.dataset.mines,t.innerHTML=f,t.classList.toggle("cell--hidden",e.status===c.hidden),t.classList.toggle("cell--opened",e.status===c.opened&&!e.hasMine),t.classList.toggle("cell--flagged",e.status===c.flagged),t.classList.toggle("cell--mine",h),t.classList.toggle("cell--zero",e.status===c.opened&&!e.hasMine&&e.adjacentMines===0),t.setAttribute("aria-label",de(e))),e.hasMine?t.dataset.hasMine="true":delete t.dataset.hasMine}function de(e){const n=`Cell row ${e.row+1}, column ${e.column+1}`;if(e.status===c.flagged)return`${n}, flagged`;if(e.status===c.opened){if(e.hasMine)return`${n}, mine`;if(e.adjacentMines===0)return`${n}, empty`;const t=e.adjacentMines===1?"adjacent mine":"adjacent mines";return`${n}, ${e.adjacentMines} ${t}`}return`${n}, hidden`}function Je(e){e.status===u.idle?g("Open any cell to start.","info"):e.status===u.playing?g("Game in progress.","info"):e.status===u.won?g(`Hooray! You found all mines in ${e.elapsedSeconds} seconds and ${e.moves} moves!`,"win"):e.status===u.lost&&g("Game over. Try again","lose")}function Ye(e){const n=i.difficultyHost;n.classList.add("select"),n.innerHTML=`
+    <button class="select__trigger" type="button" data-select-trigger>
+      ${d("shield",{size:16})}
+      <span class="select__value" data-select-value>Easy</span>
+      <span class="select__chevron" aria-hidden="true">${d("chevron",{size:14})}</span>
+    </button>
+  `;const t=n.querySelector("[data-select-trigger]");t.addEventListener("click",s=>{if(s.stopPropagation(),m.popover&&m.trigger===t){N();return}Qe({trigger:t,options:v.map(a=>({value:a,label:w[a].label,summary:w[a].summary})),selected:n.dataset.value||"easy",onSelect:a=>e(a)})})}function Xe(e){const n=i.difficultyHost;n.dataset.value=e,n.querySelector("[data-select-value]").textContent=w[e].label}function Qe({trigger:e,options:n,selected:t,onSelect:s}){N();const a=document.createElement("div");a.className="popover",a.dataset.popover="",a.innerHTML=n.map(o=>`
+    <button class="popover__option ${o.value===t?"popover__option--active":""}" type="button" data-option="${o.value}">
+      <span class="popover__check" aria-hidden="true">${d("check",{size:14})}</span>
+      <span class="popover__copy">
+        <strong>${o.label}</strong>
+        <small>${o.summary||""}</small>
+      </span>
+    </button>
+  `).join(""),document.body.append(a),document.body.classList.add("has-popover"),X(a,e),m={trigger:e,onSelect:s,popover:a,onResize:()=>X(a,e),onDocClick:o=>{!a.contains(o.target)&&!e.contains(o.target)&&N()},onKey:o=>{o.key==="Escape"&&N()}},a.addEventListener("click",o=>{const l=o.target.closest("[data-option]");if(l===null)return;const f=l.dataset.option;N(),s(f)}),window.addEventListener("resize",m.onResize),window.addEventListener("scroll",m.onResize,!0),document.addEventListener("click",m.onDocClick),document.addEventListener("keydown",m.onKey),e.setAttribute("aria-expanded","true"),requestAnimationFrame(()=>a.classList.add("popover--open"))}function N(){if(!m.popover)return;const{popover:e,trigger:n}=m;e.classList.remove("popover--open"),n.setAttribute("aria-expanded","false"),window.removeEventListener("resize",m.onResize),window.removeEventListener("scroll",m.onResize,!0),document.removeEventListener("click",m.onDocClick),document.removeEventListener("keydown",m.onKey),setTimeout(()=>{e.remove(),document.body.classList.remove("has-popover")},160),m={trigger:null,onSelect:null}}function X(e,n){const t=n.getBoundingClientRect(),s=8;e.style.minWidth=`${Math.max(220,t.width)}px`,e.style.visibility="hidden",e.style.left="0",e.style.top="0";const a=e.getBoundingClientRect();let o=t.bottom+s,l=t.left;o+a.height>window.innerHeight-8&&(o=t.top-s-a.height),l+a.width>window.innerWidth-8&&(l=window.innerWidth-8-a.width),l<8&&(l=8),e.style.left=`${Math.max(8,l)}px`,e.style.top=`${Math.max(8,o)}px`,e.style.visibility="visible"}function Ze(){return`<span class="cell__icon cell__icon--flag">${d("flag",{size:16,stroke:2.4})}</span>`}function et(){return`<span class="cell__icon cell__icon--mine">${d("bomb",{size:16,stroke:2.4})}</span>`}function ce(e){return`${e.difficulty}-${e.settings.rows}x${e.settings.columns}`}function ue(e,n){return`${e}:${n}`}function G(e=Z){const n=w[e];return{difficulty:e,settings:n,board:ye(n.rows,n.columns),status:u.idle,isFirstMove:!0,moves:0,flagsLeft:n.mines,elapsedSeconds:0}}let r=G(),z=Ae(),C=null,x=0,k=0,S=0;function tt(){Pe(),We({onCellOpen:nt,onCellFlag:st,onNewGame:fe,onContinueGame:at,onSaveGame:ot,onRandomGame:rt,onOpenScores:ct,onToggleTheme:lt,onToggleSound:dt,onDifficultyChange:it}),re(z),ie(),y(r)}function nt(e,n){if(r.status===u.won||r.status===u.lost)return;const t=r.board[e][n];if(t.status===c.flagged||t.status===c.opened)return;ut(e,n),r.moves+=1;const s=Le(r.board,t);if(r.flagsLeft+=s.removedFlags,t.hasMine){mt();return}if(Te(r.board)===0){ft();return}q("reveal"),U(r),y(r,{fresh:!1})}function st(e,n){if(r.status===u.won||r.status===u.lost)return;const t=r.board[e][n];if(t.status===c.opened)return;if(t.status===c.hidden&&r.flagsLeft===0){g("No flags left.","warn");return}const s=t.status===c.flagged,a=Ee(t);r.flagsLeft+=a,q(s?"unflag":"flag"),U(r),y(r,{fresh:!1})}function fe(){L(),I(),A(),C=null,r=G(r.difficulty),y(r)}function at(){const e=ze();if(e===null){g("Nothing to continue yet.","warn");return}if(typeof e.savedAt=="number"&&e.savedAt===C&&r.status===e.status&&r.moves===e.moves){g("Already at the saved checkpoint.","info");return}L(),r=e,C=typeof e.savedAt=="number"?e.savedAt:null,r.status===u.playing&&ae(me),y(r),g("Saved game restored.","info")}function ot(){if(r.status!==u.playing){const e=r.status===u.idle?"Open at least one cell before saving.":"Mission is already finished — start a new game first.";g(e,"warn");return}r.savedAt=Date.now(),C=r.savedAt,Ne(r),g("Game saved.","info")}function rt(){L(),I(),A(),C=null;let e=v[Math.floor(Math.random()*v.length)];e===r.difficulty&&v.length>1&&(e=v[(v.indexOf(e)+1)%v.length]),r=G(e),y(r)}function it(e){e===r.difficulty&&r.status===u.idle||(L(),I(),A(),C=null,r=G(e||Z),y(r))}function lt(){z=z===_.dark?_.light:_.dark,Ie(z),re(z)}function dt(){Ge(),ie()}function ct(){pt()}function ut(e,n){r.isFirstMove&&(we(r.board,r.settings.mines,e,n),r.isFirstMove=!1,r.status=u.playing,ae(me))}function me(){r.elapsedSeconds+=1,U(r),oe(r)}function ft(){r.status=u.won,L(),I(),A(),xe({difficulty:r.difficulty,seconds:r.elapsedSeconds,moves:r.moves}),q("win"),B(!0),y(r,{fresh:!1}),x=setTimeout(()=>{x=0,B(!1)},1400),S=setTimeout(()=>{S=0,pe("won")},220)}function mt(){r.status=u.lost,L(),I(),A(),r.board.flat().forEach(e=>{e.hasMine&&(e.status=c.opened)}),q("lose"),P(!0),y(r,{fresh:!1}),k=setTimeout(()=>{k=0,P(!1)},600),S=setTimeout(()=>{S=0,pe("lost")},220)}function I(){x!==0&&(clearTimeout(x),x=0),k!==0&&(clearTimeout(k),k=0),S!==0&&(clearTimeout(S),S=0),B(!1),P(!1)}function pe(e){const n=e==="won",t=n?"Mission complete":"Mission failed",s=n?"Field cleared.":"Boom — wrong tile.",a=document.createElement("div");a.className="result",a.innerHTML=`
+    <div class="result__hero ${n?"result__hero--win":"result__hero--lose"}">
+      <span class="result__icon">${d(n?"trophy":"bomb",{size:26})}</span>
+      <span class="result__time mono">${V(r.elapsedSeconds)}</span>
+    </div>
+    <p class="result__copy">${n?`You found all mines in <strong>${r.elapsedSeconds} seconds</strong> and <strong>${r.moves} moves</strong>.`:"You stepped on a mine. Try the same field again or pick a new mission."}</p>
+    <div class="result__meta">
+      <div><span>${d("shield",{size:12})} Mission</span><strong>${w[r.difficulty].label}</strong></div>
+      <div><span>${d("move",{size:12})} Moves</span><strong>${r.moves}</strong></div>
+      <div><span>${d("flag",{size:12})} Flags left</span><strong>${r.flagsLeft}</strong></div>
+    </div>
+  `;const o=document.createElement("div");o.className="result__actions",o.innerHTML=`
+    <button class="pill pill--ghost" data-modal-close type="button">Close</button>
+    <button class="pill pill--primary" data-result-newgame type="button">${d("refresh",{size:16})}<span>New game</span></button>
+  `,le({title:s,eyebrow:t,body:a,footer:o}).querySelector("[data-result-newgame]").addEventListener("click",()=>{H(),fe()})}function pt(){const e=te(),n=document.createElement("div");if(n.className="scoreboard",e.length===0)n.innerHTML=`
+      <div class="scoreboard__empty">
+        <span class="scoreboard__icon">${d("trophy",{size:28})}</span>
+        <p>No wins yet — your fastest defuses will live here.</p>
+      </div>
+    `;else{const s=document.createElement("div");s.className="scoreboard__head",["#","Mission","Time","Moves"].forEach(o=>{const l=document.createElement("span");l.textContent=o,s.append(l)});const a=document.createElement("ul");a.className="scoreboard__list",e.forEach((o,l)=>{a.append(ht(o,l))}),n.append(s,a)}const t=document.createElement("div");t.className="scoreboard__actions",t.innerHTML=`
+    <button class="pill pill--ghost" data-clear-scores type="button">Clear scores</button>
+    <button class="pill pill--primary" data-modal-close type="button">Done</button>
+  `,le({eyebrow:`${d("trophy",{size:12})} High scores`,title:"Top 10 fastest defuses",body:n,footer:t}),t.querySelector("[data-clear-scores]").addEventListener("click",()=>{ke(),H(),g("High scores cleared.","info")})}function gt(e){return e===1?"🥇":e===2?"🥈":e===3?"🥉":String(e)}function ht(e,n){const t=n+1,s=w[e.difficulty],a=document.createElement("li");a.className=`scoreboard__row scoreboard__row--rank-${t}`;const o=document.createElement("span");o.className="scoreboard__rank",o.textContent=gt(t);const l=document.createElement("span");l.className="scoreboard__mission";const f=document.createElement("span");f.className=`dot dot--${e.difficulty}`,f.setAttribute("aria-hidden","true"),l.append(f,document.createTextNode(s.label));const h=document.createElement("small");h.textContent=s.short,l.append(h);const E=document.createElement("span");E.className="scoreboard__time mono",E.textContent=V(e.seconds);const b=document.createElement("span");return b.className="scoreboard__moves",b.textContent=String(e.moves),a.append(o,l,E,b),a}tt();let D=0,Q=0;window.addEventListener("resize",()=>{D===0&&(D=requestAnimationFrame(()=>{D=0,document.body.classList.add("is-resizing")})),clearTimeout(Q),Q=setTimeout(()=>{document.body.classList.remove("is-resizing")},160)},{passive:!0});
